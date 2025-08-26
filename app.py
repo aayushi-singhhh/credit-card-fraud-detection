@@ -10,8 +10,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
-from io import BytesIO
+from io import BytesIO, StringIO
 import warnings
+import os
+import requests
 warnings.filterwarnings('ignore')
 
 # Page configuration
@@ -72,26 +74,56 @@ st.sidebar.title("🔧 Navigation")
 page = st.sidebar.selectbox("Choose a page:", 
                            ["🏠 Home", "📊 Data Analysis", "🤖 Make Prediction", "📈 Model Performance", "ℹ️ About"])
 
-# Import dataset manager
-try:
-    from dataset_manager import DatasetManager
-    dataset_manager = DatasetManager()
-except ImportError:
-    dataset_manager = None
-
 # Load and cache data
 @st.cache_data
 def load_data():
     """Load the credit card dataset from various sources"""
-    if dataset_manager:
-        return dataset_manager.load_dataset()
-    else:
-        # Fallback to local file or synthetic data
+    
+    # Try multiple sources in order of preference
+    sources_to_try = [
+        ("Streamlit Secrets", lambda: st.secrets.get("DATASET_URL") if hasattr(st, 'secrets') else None),
+        ("Environment Variable", lambda: os.environ.get("DATASET_URL")),
+        ("Local File", lambda: "creditcard.csv" if os.path.exists("creditcard.csv") else None)
+    ]
+    
+    for source_name, get_source in sources_to_try:
         try:
-            return pd.read_csv('creditcard.csv')
-        except FileNotFoundError:
-            st.warning("⚠️ Dataset 'creditcard.csv' not found. Generating synthetic data for demo...")
-            return generate_synthetic_fallback_data()
+            source = get_source()
+            if source:
+                st.info(f"🔍 Trying to load from {source_name}...")
+                
+                if source_name == "Local File":
+                    # Local file
+                    df = pd.read_csv(source)
+                    st.success(f"✅ Dataset loaded from {source_name}")
+                else:
+                    # URL source
+                    st.info(f"📥 Downloading from URL: {str(source)[:50]}...")
+                    
+                    response = requests.get(source, timeout=120)
+                    if response.status_code == 200:
+                        df = pd.read_csv(StringIO(response.text))
+                        st.success(f"✅ Dataset loaded from {source_name}")
+                    else:
+                        st.error(f"❌ HTTP {response.status_code} from {source_name}")
+                        continue
+                
+                # Validate dataset
+                if 'Class' in df.columns and len(df) > 1000:
+                    fraud_count = df['Class'].sum()
+                    st.info(f"📊 Loaded {len(df):,} transactions with {fraud_count:,} fraudulent cases")
+                    return df
+                else:
+                    st.error(f"❌ Invalid dataset from {source_name}")
+                    continue
+                    
+        except Exception as e:
+            st.error(f"❌ Error loading from {source_name}: {str(e)}")
+            continue
+    
+    # All sources failed - generate synthetic data
+    st.warning("⚠️ All data sources failed. Generating synthetic data for demo...")
+    return generate_synthetic_fallback_data()
 
 @st.cache_data
 def generate_synthetic_fallback_data():
