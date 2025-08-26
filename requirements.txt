@@ -6,3 +6,5 @@ seaborn
 scipy
 xgboost
 statsmodels
+streamlit
+plotly
