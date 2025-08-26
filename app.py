@@ -72,16 +72,49 @@ st.sidebar.title("🔧 Navigation")
 page = st.sidebar.selectbox("Choose a page:", 
                            ["🏠 Home", "📊 Data Analysis", "🤖 Make Prediction", "📈 Model Performance", "ℹ️ About"])
 
+# Import dataset manager
+try:
+    from dataset_manager import DatasetManager
+    dataset_manager = DatasetManager()
+except ImportError:
+    dataset_manager = None
+
 # Load and cache data
 @st.cache_data
 def load_data():
-    """Load the credit card dataset"""
-    try:
-        data = pd.read_csv('creditcard.csv')
-        return data
-    except FileNotFoundError:
-        st.error("Dataset 'creditcard.csv' not found. Please ensure the file is in the project directory.")
-        return None
+    """Load the credit card dataset from various sources"""
+    if dataset_manager:
+        return dataset_manager.load_dataset()
+    else:
+        # Fallback to local file or synthetic data
+        try:
+            return pd.read_csv('creditcard.csv')
+        except FileNotFoundError:
+            st.warning("⚠️ Dataset 'creditcard.csv' not found. Generating synthetic data for demo...")
+            return generate_synthetic_fallback_data()
+
+@st.cache_data
+def generate_synthetic_fallback_data():
+    """Generate synthetic data as fallback"""
+    import numpy as np
+    
+    np.random.seed(42)
+    n_samples = 5000
+    n_fraud = int(n_samples * 0.002)
+    
+    data = {}
+    data['Time'] = np.random.uniform(0, 172800, n_samples)
+    data['Amount'] = np.random.lognormal(3, 1.5, n_samples)
+    
+    for i in range(1, 29):
+        data[f'V{i}'] = np.random.normal(0, 1, n_samples)
+    
+    # Add fraud cases
+    fraud_indices = np.random.choice(n_samples, n_fraud, replace=False)
+    data['Class'] = np.zeros(n_samples, dtype=int)
+    data['Class'][fraud_indices] = 1
+    
+    return pd.DataFrame(data)
 
 # Train and cache model
 @st.cache_resource

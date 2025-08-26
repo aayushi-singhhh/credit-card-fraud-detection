@@ -38,6 +38,44 @@ python3 -m streamlit run app.py
 
 3. Open your browser and go to `http://localhost:8501`
 
+## 🌐 Deployment
+
+### Quick Deployment
+```bash
+./deploy.sh
+```
+
+### Deployment Options
+1. **Streamlit Cloud** (Free, Recommended)
+2. **Heroku** (Free tier available)
+3. **Docker** (Self-hosted)
+4. **Google Cloud Run** (Pay-per-use)
+5. **Railway** (Free tier)
+
+### Dataset for Deployment
+Since the dataset is too large for GitHub, you have several options:
+- Upload to **Google Drive** and use public link
+- Store in **AWS S3** with public access
+- Use **Dropbox** with direct download link
+- Deploy with **synthetic data** (demo mode)
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for detailed instructions.
+
+## 🔧 Environment Variables
+
+For deployment, set these environment variables:
+
+```bash
+# Option 1: Direct URL
+DATASET_URL="https://your-storage-url/creditcard.csv"
+
+# Option 2: AWS S3
+S3_BUCKET_NAME="your-bucket"
+S3_FILE_KEY="creditcard.csv"
+AWS_ACCESS_KEY_ID="your-key"
+AWS_SECRET_ACCESS_KEY="your-secret"
+```
+
 ## � Dataset
 
 The application uses the Credit Card Fraud Detection dataset containing:

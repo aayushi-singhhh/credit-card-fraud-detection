@@ -2,6 +2,13 @@
 creditcard.csv
 *.csv
 
+# Secrets and config files
+.streamlit/secrets.toml
+.env
+config.json
+credentials.json
+service-account.json
+
 # Python
 __pycache__/
 *.py[cod]
