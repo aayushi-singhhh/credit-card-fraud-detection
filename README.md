@@ -13,6 +13,13 @@ A comprehensive machine learning web application for detecting fraudulent credit
 
 ## 🚀 Quick Start
 
+### ⚠️ **IMPORTANT: Dataset Required**
+Before running the app, you need to download the dataset. See [`DATASET_SETUP.md`](DATASET_SETUP.md) for detailed instructions.
+
+**Quick Download:**
+1. Get `creditcard.csv` from [Kaggle](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud)
+2. Place it in the project root directory
+
 ### Method 1: Using the Launcher Script
 ```bash
 ./run_app.sh
@@ -21,12 +28,12 @@ A comprehensive machine learning web application for detecting fraudulent credit
 ### Method 2: Manual Setup
 1. Install dependencies:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 2. Run the Streamlit app:
 ```bash
-streamlit run app.py
+python3 -m streamlit run app.py
 ```
 
 3. Open your browser and go to `http://localhost:8501`
